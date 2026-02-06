@@ -1,0 +1,82 @@
+﻿/* Main grid */
+.woman-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+}
+
+    /* Header */
+    .woman-grid th {
+        background-color: #434e93;
+        color: #ffffff;
+        padding: 10px 8px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #bfe5da;
+    }
+
+    /* Rows */
+    .woman-grid td {
+        padding: 8px;
+        border-bottom: 1px solid #eeeeee;
+        vertical-align: middle;
+    }
+
+    /* Zebra striping */
+    .woman-grid tr:nth-child(even) {
+        background-color: #f7f7f7;
+    }
+
+    /* Hover effect */
+    .woman-grid tr:hover {
+        background-color: #eefaf6;
+    }
+
+/* Text cells */
+.cell-text {
+    font-weight: 500;
+    color: #333;
+}
+
+/* Status (DEO) */
+.cell-status {
+    font-weight: 600;
+    color: #666;
+}
+
+/* Link buttons */
+.btn-link {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* NNIPS button */
+.btn-nnips {
+    color: #0b7d4b;
+    border: 1px solid #0b7d4b;
+    background-color: #e8f7f0;
+}
+
+    .btn-nnips:hover {
+        background-color: #0b7d4b;
+        color: #ffffff;
+    }
+
+/* Non-NNIPS button */
+.btn-non-nnips {
+    color: #b91c1c;
+    border: 1px solid #b91c1c;
+    background-color: #fdecec;
+}
+
+    .btn-non-nnips:hover {
+        background-color: #b91c1c;
+        color: #ffffff;
+    }

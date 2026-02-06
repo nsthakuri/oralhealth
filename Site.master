@@ -1,0 +1,132 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="site.master.cs" Inherits="site" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Oral Health | Data Management System</title>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="<%= ResolveUrl("~/assets/images/study_logo.png") %>">
+    <link href="<%= ResolveUrl("~/assets/images/study_logo.png") %>" rel="apple-touch-icon">    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<%= ResolveUrl("~/assets/css/style.css") %>" rel="stylesheet" />    
+    <link href="<%= ResolveUrl("~/assets/css/gridstyle.css") %>" rel="stylesheet" />    
+      
+    <asp:ContentPlaceHolder ID="HeaderContentPlaceHolder" runat="server">
+        <asp:Literal ID="SFADMIN" Visible="false" runat="server" />
+        <asp:Literal ID="UserRole" runat="server" Visible="false" />
+        <asp:Literal ID="UserFullName" runat="server" Visible="false" />
+        <asp:Literal ID="UserName" runat="server" Visible="false" />
+        <asp:Literal ID="UserRoleName" runat="server" Visible="false" />
+    </asp:ContentPlaceHolder>
+</head>
+
+<body>
+    <form ID="form1" runat="server" EncType="multipart/form-data" class="form-horizontal form-material">
+     
+            <!-- TOP BAR -->
+    <div class="topbar d-flex align-items-center px-3">
+        <span class="text-white fw-bold">
+            <asp:Label ID="NepaliDate" runat="server" />    
+            <asp:TextBox  AutoComplete="off" ID="TxtLang" Text="" Visible="false" runat="server" />                  
+            <asp:Label ID="LblDay"  runat="server" /> 
+            <asp:Label ID="LngType"  runat="server" Visible="false" />
+            <asp:Label ID="LblLang" Visible="false" runat="server" Text="NP" CssClass="Lang" />
+            &nbsp;  <asp:Label ID="LblEn" runat="server" Text="" CssClass="Lang" />                                       
+
+          <asp:CheckBox ID="ChkBoxLang" runat="server"
+            OnCheckedChanged="ChkBoxLang_CheckedChanged" AutoPostBack="true"/> 
+        </span>
+
+
+        <button class="btn btn-sm btn-light ms-auto">
+            <asp:Literal ID="DisplayName" runat="server" />                  
+        </button>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
+        <div class="container-fluid">
+              
+            <a class="navbar-brand fw-bold" href="<%= ResolveUrl("~/default.aspx") %>">
+                     <img src="<%= ResolveUrl("~/assets/images/study_logo.png") %>" height="60" alt="MINT4 Menu Panel">
+            </a>
+            <h2>Nepal Oral Health Study</h2>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="pages/OH_CREATEHH.aspx?page=createhh">Create Household</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard/Index.aspx">Dashboard</a></li>
+
+                    <!-- Dropdown 1 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Data Log</a>
+                        <ul class="dropdown-menu">
+
+                            <li><a class="dropdown-item" href="#">Census</a></li>
+                            <li><a class="dropdown-item" href="#">Pregnancy Surveillance (PSF)</a></li> 
+
+                        </ul>
+                    </li>
+
+                    <!-- Dropdown 2 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Schedule</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Summary</a></li>
+                            <li><a class="dropdown-item" href="#">Cluster Report</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="#">Logout</a></li>
+
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+
+    <!-- PAGE CONTENT -->
+    <div class="container py-4">
+
+        <!-- FORM IN A CARD -->
+        <div class="card shadow-sm mb-4">
+             <div class="card-header bg-primary text-white fw-bold">
+               <asp:Label ID="LblFormName" runat="server" />
+            </div>
+
+            <div class="card-body">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                        </asp:ContentPlaceHolder>
+               
+
+            </div>
+         </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer class="footer-area mt-4 py-3">
+        <div class="text-center text-white small">            
+            <asp:Label ID="LblFooterText" runat ="server" />    
+        </div>
+    </footer>
+
+
+    <!-- Bootstrap JS 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+         -->
+
+    </form>
+</body>
+</html>

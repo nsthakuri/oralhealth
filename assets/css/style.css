@@ -1,0 +1,576 @@
+﻿/* ===========================================================================
+   ORAL HEALTH STUDY — MASTER UI STYLESHEET
+   Clean, Optimized, Bootstrap-Compatible CSS
+===========================================================================*/
+
+/* ========================================================
+   TOP BAR
+=========================================================*/
+.topbar {
+    background: #004aad;
+    height: 50px;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+    font-size: 15px;
+}
+
+
+/* ========================================================
+   NAVBAR – IMPROVED HORIZONTAL MENU
+=========================================================*/
+
+.navbar-custom {
+    background: #ffffff;
+    padding: 8px 15px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+    /* Normal link */
+    .navbar-custom .nav-link {
+        color: #004aad;
+        font-weight: 600;
+        padding: 10px 15px !important;
+    }
+
+        /* Hover effect */
+        .navbar-custom .nav-link:hover {
+            background: #e7f0ff;
+            border-radius: 6px;
+            transition: 0.2s ease;
+        }
+
+        /* Active link */
+        .navbar-custom .nav-link.active {
+            background: #004aad !important;
+            color: #fff !important;
+            border-radius: 6px;
+        }
+
+    /* Dropdown Menu */
+    .navbar-custom .dropdown-menu {
+        border-radius: 8px;
+        padding: 8px 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: none;
+        min-width: 230px;
+        z-index: 9999 !important;
+    }
+
+    .navbar-custom .dropdown-item {
+        padding: 8px 15px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #004aad;
+    }
+
+        .navbar-custom .dropdown-item:hover {
+            background: #e7f0ff;
+            color: #004aad;
+        }
+
+/* ========================================================
+   SUBMENU FIX (Bootstrap does not support nested dropdown)
+=========================================================*/
+
+.dropdown-submenu {
+    position: relative;
+}
+
+    .dropdown-submenu > a::after {
+        content: "›";
+        float: right;
+        font-size: 18px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+
+    /* Submenu positioning */
+    .dropdown-submenu > .dropdown-menu {
+        top: 0;
+        left: 100%;
+        margin-left: 0;
+        margin-top: -2px;
+        border-radius: 8px;
+        position: absolute;
+        z-index: 99999 !important;
+        display: none;
+    }
+
+    .dropdown-submenu:hover > .dropdown-menu {
+        display: block;
+    }
+
+/* ========================================================
+   DARK MODE
+=========================================================*/
+
+.dark-mode {
+    background: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+    .dark-mode .topbar,
+    .dark-mode .navbar-custom {
+        background: #0d47a1 !important;
+    }
+
+    .dark-mode .nav-link {
+        color: #bbdefb !important;
+    }
+
+    .dark-mode .dropdown-menu {
+        background: #1b1b1b !important;
+    }
+
+    .dark-mode .dropdown-item {
+        color: #bbdefb !important;
+    }
+
+        .dark-mode .dropdown-item:hover {
+            background: #0d47a1 !important;
+            color: #fff !important;
+        }
+
+
+/* ========================================================
+   CARD
+=========================================================*/
+
+.card {
+    border-radius: 10px;
+    border: 1px solid #e4e7ec;
+}
+
+
+/* ========================================================
+   TABLE / GRIDVIEW
+=========================================================*/
+
+.table, .gridview {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    /* Header */
+    .table thead th,
+    .gridview th {
+        background: #004aad;
+        color: white;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    /* Body */
+    .table tbody td,
+    .gridview td {
+        padding: 10px;
+        border-bottom: 1px solid #e5e8ec;
+        font-size: 15px;
+    }
+
+    /* Alternating rows */
+    .table tbody tr:nth-child(odd),
+    .gridview tr:nth-child(odd) {
+        background: #ffffff;
+    }
+
+    .table tbody tr:nth-child(even),
+    .gridview tr:nth-child(even) {
+        background: #f4f7ff;
+    }
+
+    /* Hover */
+    .table tbody tr:hover,
+    .gridview tr:hover {
+        background: #e1ecff;
+        transition: 0.2s ease-in-out;
+    }
+
+/* Dark mode rows */
+.dark-mode .table tbody tr:nth-child(even),
+.dark-mode .gridview tr:nth-child(even) {
+    background: #1e1e1e !important;
+}
+
+.dark-mode .table tbody tr:nth-child(odd),
+.dark-mode .gridview tr:nth-child(odd) {
+    background: #151515 !important;
+}
+
+.dark-mode .table tbody tr:hover,
+.dark-mode .gridview tr:hover {
+    background: #2b2b2b !important;
+}
+
+
+/* ========================================================
+   FORM FIELDS
+=========================================================*/
+
+.form-control,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    border: 1px solid #cfd8dc;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 16px;
+    background: white;
+    height: 46px;
+    transition: 0.25s ease;
+}
+
+    .form-control:focus,
+    input:focus,
+    select:focus {
+        border-color: #004aad !important;
+        box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.25);
+    }
+
+    /* Disabled */
+    .form-control:disabled {
+        background: #f0f0f0;
+    }
+
+/* Dark mode */
+.dark-mode .form-control {
+    background: #1b1b1b;
+    border: 1px solid #555;
+    color: white;
+}
+
+
+/* ========================================================
+   BUTTONS
+=========================================================*/
+
+.btn-primary {
+    background: #004aad !important;
+    border-color: #004aad !important;
+    padding: 10px 22px;
+    font-size: 15px;
+    border-radius: 8px;
+}
+
+    .btn-primary:hover {
+        background: #003680 !important;
+    }
+
+.btn-danger {
+    background: #d32f2f !important;
+    border-radius: 8px;
+}
+
+.btn-success {
+    background: #2e7d32 !important;
+    border-radius: 8px;
+}
+
+
+/* ========================================================
+   ALERT / MESSAGE BOXES
+=========================================================*/
+
+.message-box {
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.success-card {
+    max-width: 520px;
+    margin: 20px auto;
+    background: #f0fdf7;
+    border-left: 6px solid #22c55e;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: 18px 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.success-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.success-card-icon {
+    width: 36px;
+    height: 36px;
+    background: #22c55e;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.success-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #166534;
+    
+}
+
+.success-card-body {
+    font-size: 15px;
+    color: #14532d;
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+/* ASP.NET validation messages */
+span.error-msg,
+span[style*="color"],
+span.validator,
+span[id*="Validator"] {
+    color: #dc2626 !important; /* red */
+    font-weight: 600;
+}
+
+input.error-msg,
+select.error-msg,
+textarea.error-msg {
+    border: 2px solid #dc2626 !important;
+    background-color: #fff5f5;
+}
+
+ 
+/* Optional: input highlight */
+input.error-msg,
+select.error-msg,
+textarea.error-msg {
+    border: 1.5px solid #dc2626;
+    background-color: #fff5f5;
+}
+
+
+.warning-msg {
+    background: #fff8e1;
+    color: #8d6e00;
+    border-left: 5px solid #b08900;
+}
+
+/* Dark mode messages */
+.dark-mode .success-msg {
+    background: rgba(0,255,0,0.1);
+    color: #5bff9c;
+}
+
+.dark-mode .error-msg {
+    background: rgba(255,0,0,0.15);
+    color: #ff8b94;
+}
+
+.dark-mode .warning-msg {
+    background: rgba(255,193,7,0.15);
+    color: #ffe082;
+}
+
+
+/* ========================================================
+   FOOTER
+=========================================================*/
+
+.footer-area {
+    background: #004aad;
+    padding: 15px 0;
+    text-align: center;
+    color: white;
+    margin-top: 40px;
+}
+.question-label {
+    font-family: 'Roboto', 'Open Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333; /* text color */
+}
+ 
+.required-field {
+    color: #fa4f4f; /* asterisk color */
+    font-weight: 700;
+}
+
+
+.woman-section-title {
+    background: #fefafa;
+    padding: 8px 10px;
+    font-size: 18px;
+    font-weight: 600;
+    border-left: 4px solid #004aad;
+    margin-top: 25px;
+}
+
+
+.woman-section {
+    border: 1px solid #f2408c; /* 1px solid border */
+    padding: 15px; /* space inside the border */
+    margin: 10px; /* space outside the border */
+    border-radius: 8px; /* optional: rounded corners */
+}
+
+.husband-section-title {
+    background: #edf3f8;
+    padding: 8px 10px;
+    font-size: 18px;
+    font-weight: 600;
+    border-left: 4px solid #004aad;
+    margin-top: 25px;
+}
+.husband-section {
+    border: 1px solid #004aad; /* 1px solid border */
+    padding: 15px; /* space inside the border */
+    margin: 10px; /* space outside the border */
+    border-radius: 8px; /* optional: rounded corners */
+}
+
+
+.question-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #0d6efd;
+}
+
+.question-text {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.question-sub {
+    color: #555;
+    font-weight: 500;
+}
+
+.question-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 18px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+/* Yes button */
+.btn-yes {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+    .btn-yes:hover {
+        background-color: #0b5ed7;
+    }
+
+/* No button */
+.btn-no {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+    .btn-no:hover {
+        background-color: #5a6268;
+    }
+
+@media (max-width: 600px) {
+    .question-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.status-complete {
+    color: #1b7d52;
+    font-weight: bold;
+}
+
+.status-incomplete {
+    color: #c61f3d;
+    font-weight: bold;
+}
+
+.error-card {
+    display: block;
+    max-width: 520px;
+    margin: 20px auto;
+    background: #fff1f2;
+    border-left: 6px solid #ef4444;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: 18px 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.error-card.show {
+    display: block;
+}
+
+.error-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-card-icon {
+    width: 36px;
+    height: 36px;
+    background: #ef4444;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.error-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #7f1d1d;
+}
+
+.error-card-body {
+    font-size: 15px;
+    color: #991b1b;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.grid-empty-msg {
+    color: #dc2626; /* red */
+    font-weight: 600;
+    text-align: center;
+    padding: 12px;
+}
+ 
+.age-box {
+    background-color: #f3f3f3;
+    font-weight: bold;
+}
+ 
