@@ -384,7 +384,29 @@
                         </td>
                     </tr>
 
-                     
+                     <tr>
+                        <td>
+                            <asp:Label ID="Label15" Text="Met Status" runat="server" CssClass="question-label" />
+                        </td>
+                    </tr>
+                        
+                       <tr>
+                        <td>
+                            <asp:DropDownList ID="CAHOHMS" runat="server">
+                                <asp:ListItem Enabled="true" Value="">-----</asp:ListItem>
+                                <asp:ListItem Text="Met" Value="1" />
+                                <asp:ListItem Text="Not met" Value="2" />
+                            </asp:DropDownList> 
+                            <asp:RequiredFieldValidator 
+                                ID="RequiredFieldValidator3" 
+                                runat="server" 
+                                ControlToValidate="CAHOHMS"
+                                ErrorMessage="Required field"
+                                CssClass="error-msg" 
+                                Display="Dynamic" />
+                        </td>
+                    </tr>
+
                     <!-- RESPONDENT -->
                     <tr>
                         <td>
@@ -425,7 +447,7 @@
                     <!-- FAMILY COUNT -->
                     <tr>
                         <td>
-                            <asp:Label ID="Label9" Text="Family count" runat="server" CssClass="question-label" />
+                            <asp:Label ID="Label9" Text="Total family count" runat="server" CssClass="question-label" />
                         </td>
                         <td>
                             <asp:TextBox AutoComplete="off" runat="server" ID="PerCount" Width="210" MaxLength="2" ValidationGroup="vgHeader"/>

@@ -382,7 +382,22 @@
                         </td>
                     </tr>
 
-                     
+                    <tr>
+                        <td>
+                            <asp:Label ID="Label15" Text="Met Status" runat="server" CssClass="question-label" />
+                        </td>
+                    </tr>
+                        
+                       <tr>
+                        <td>
+                            <asp:DropDownList ID="CAHOHMS" runat="server">
+                                <asp:ListItem Enabled="true" Value="">-----</asp:ListItem>
+                                <asp:ListItem Text="Met" Value="1" />
+                                <asp:ListItem Text="Not met" Value="2" />
+                            </asp:DropDownList>  
+                        </td>
+                    </tr>
+                        
                     <!-- RESPONDENT -->
                     <tr>
                         <td>
@@ -429,7 +444,7 @@
                     <!-- FAMILY COUNT -->
                     <tr>
                         <td>
-                            <asp:Label ID="Label9" Text="Family count" runat="server" CssClass="question-label" />
+                            <asp:Label ID="Label9" Text="Total family count" runat="server" CssClass="question-label" />
                         </td>
                     </tr>
                     <tr>
@@ -500,7 +515,7 @@
                 <asp:Label ID="LblAddress" runat="server" CssClass="success-msg" />                
                 
             </h4>
-
+             
             <asp:Repeater ID="RepeaterCensus" runat="server" OnItemDataBound="RepeaterCensus_ItemDataBound" EnableViewState="true">
                 <ItemTemplate>
             <!-- =================== WOMAN SECTION =================== -->

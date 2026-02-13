@@ -54,7 +54,7 @@ public partial class pages_OH_CENSUSb : System.Web.UI.Page
             BindWomanGrid();
             //delete from woman list
             var womanListTA = new OralHealthTableAdapters.WomenRosterTableAdapter();
-            womanListTA.DeleteQuery(CensusID);
+            //womanListTA.DeleteQuery(CensusID);
             PanelSuccess.Visible = true;
             lblsucessmsg.Text = MsgWomanDeletedFromList;
             BindWomanGrid();
@@ -462,6 +462,7 @@ public partial class pages_OH_CENSUSb : System.Web.UI.Page
 
     private void SaveNewWoman()
     {
+        /*
         string womNNIPS = ResolveNNIPS(NewCensusNNIPSnum.Text, ChkCensusNNIPSnum.Checked);
         string husbNNIPS = ResolveNNIPS(NewHusbandNNIPSNUM.Text, ChkNewHusbandNNIPSNUM.Checked);
 
@@ -541,6 +542,7 @@ public partial class pages_OH_CENSUSb : System.Web.UI.Page
 
             scope.Complete();
         }
+        */
     }
 
 

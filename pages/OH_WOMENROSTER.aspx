@@ -16,31 +16,85 @@
             </h4>
             <br />
               
-            <asp:Label ID="lblsucessmsg" runat="server" CssClass="success-msg" />        
+            <asp:Panel ID="PanelSuccess" runat="server" Visible="false">
+            <div class="success-card">
+                <div class="success-card-header">
+                    <div class="success-card-icon">✓</div>
+                    <div class="success-card-title">Data Saved Successfully</div>
+                </div> 
+                <div class="success-card-body">
+                    <asp:Label ID="lblsucessmsg" runat="server" />  
+                </div>
+            </div>
+            </asp:Panel>
              
+
+            <div class="card-title">
+                <b>Add Women to Household Roster: </b>
+                Please add married women aged 15–35 years who are living with their husbands in this household.
+            </div>
+
+            <asp:Panel ID="PanelPopulateWomanList" runat="server">     
+                 
+           <asp:GridView 
+            ID="GridWomanList" 
+            runat="server"
+            AutoGenerateColumns="false"
+            CssClass="woman-grid"
+            AllowSorting="false"
+            AllowPaging="false"
+            ShowHeaderWhenEmpty="true"
+            EmptyDataText="No record found."
+            EmptyDataRowStyle-CssClass="grid-empty-msg">
+             
+                 
+               <Columns>
+
+                   <asp:BoundField 
+            DataField="CensusID" 
+            HeaderText="ID" Visible="false"
+            ItemStyle-CssClass="cell-text" />
+
+                   <asp:TemplateField HeaderText="SN">
+                    <ItemTemplate>
+                        <%# Container.DataItemIndex + 1 %>. 
+                    </ItemTemplate>
+                    <ItemStyle HorizontalAlign="Center" Width="50px" />
+                </asp:TemplateField>
+
+
+        <asp:BoundField 
+            DataField="CensusFirstNames" 
+            HeaderText="First Name"
+            ItemStyle-CssClass="cell-text" />
+
+
+        <asp:BoundField 
+            DataField="CensusLastName" 
+            HeaderText="Last Name"
+            ItemStyle-CssClass="cell-text" />
+         
+
+        <asp:TemplateField HeaderText="Action">
+        <ItemTemplate>
+            <asp:LinkButton
+                ID="ButtonAddtoCensus"
+                runat="server"
+                Text="Add to census"
+                PostBackUrl='<%# GetDynamicUrl(Eval("CensusNNIPSNUM"), Eval("CensusID")) %>'
+                CssClass="btn-link btn-nnips"
+                CausesValidation="false" />
+        </ItemTemplate>
+    </asp:TemplateField>
+                     
+    </Columns>
+</asp:GridView>  
+</asp:Panel>
 
         <asp:Panel ID="PanelNewWomenRoster" runat="server">     
        <table class="table">
-           <tr>
-               <td colspan="3">
-                   
-                   <div class="question-card">
-                    <div class="question-text">        
-                        <span class="question-sub">
-                            Now, <strong>create</strong> a list of married women aged 15–35 years and ask 
-                                   each woman the questions individually for participation.
-                          </span>
-                    </div>
-                  </div>
-               </td>
-           </tr>
-           <tr>
-               <th>SN</th>
-               <th>First names</th>
-               <th>Last name</th>
-           </tr>
-           <tr>
-               <td>1.</td>
+            
+           <tr> 
                <td><asp:TextBox AutoComplete="off" runat="server" ID="WOMFNAMES1" MaxLength="30" Width="210" />
                     <asp:RequiredFieldValidator 
                         ID="RequiredFieldValidator3" 
@@ -62,8 +116,7 @@
                         SetFocusOnError="true" /></td>
            </tr>
 
-           <tr>
-               <td>2.</td>
+           <tr> 
                <td><asp:TextBox AutoComplete="off" runat="server" ID="WOMFNAMES2" MaxLength="30" Width="210" />
                     
                </td>
@@ -80,8 +133,7 @@
                    </td>
            </tr>
 
-           <tr>
-               <td>3.</td>
+           <tr> 
                <td><asp:TextBox AutoComplete="off" runat="server" ID="WOMFNAMES3" MaxLength="30" Width="210" />
                      
                </td>
@@ -98,8 +150,7 @@
              </td>
            </tr>
 
-           <tr>
-               <td>4.</td>
+           <tr> 
                <td><asp:TextBox AutoComplete="off" runat="server" ID="WOMFNAMES4" MaxLength="30" Width="210" />
                    
                </td>
@@ -116,12 +167,12 @@
            </tr>
 
            <tr>
-               <td colspan="3">
+               <td colspan="2">
                    <asp:Button 
                 ID="ButtonCreateNewWoman" 
                 runat="server"
                 CssClass="btn btn-primary"
-                Text="Create New Woman List" 
+                Text="Add Woman" 
                 OnClick="ButtonCreateNewWoman_Click"
                 CausesValidation="true"  />
                </td>

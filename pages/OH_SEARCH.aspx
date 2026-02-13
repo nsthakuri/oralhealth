@@ -10,12 +10,16 @@
     <asp:Literal ID="LitCurWeek" runat="server" Visible="false" />
     
     <div class="page-card">
-       <%-- <div class="card-header bg-primary text-white fw-bold">
-                Census Search
-            </div>--%>
+        <asp:Panel ID="PanelError" runat="server" CssClass="error-card" Visible="false">
+        <div class="error-card-body">
+            <asp:Literal ID="LitErrors" runat="server" /> 
+ 
+        </div>
+    </asp:Panel>
+         
+        <asp:Panel ID="PanelData" runat="server">
         <h2 class="page-title">👩‍⚕️ Participant Profile Summary</h2>
-        <%--<div class="subnote">Participant Dashboard</div>--%>
-
+        <%--<div class="subnote">Participant Dashboard</div>--%>        
         <table class="table">
             <tr><td>Pregnancy Status:</td><td><asp:Label ID="LblPregnancyStatus" runat="server" /></td></tr>
             <tr><td>NNIPSNum:</td><td><asp:Label ID="LblNNIPSNum" runat="server" /></td></tr>
@@ -199,5 +203,6 @@
                 <td><asp:Label ID="Label74" runat="server" /></td>
             </tr>
         </table>
+        </asp:Panel>
     </div>
 </asp:Content>

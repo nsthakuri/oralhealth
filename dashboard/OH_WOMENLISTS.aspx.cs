@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System;   
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -40,7 +40,7 @@ public partial class dashboard_OH_WOMENLISTS : System.Web.UI.Page
         OralHealth.WomenRosterDataTable DT = new OralHealth.WomenRosterDataTable();
         if (Address.Text == string.Empty)
         {
-            TA.FillByOrderByCreateDate(DT);
+            //TA.FillByAddress(DT, strid);
         }
         else
         {
@@ -65,7 +65,7 @@ public partial class dashboard_OH_WOMENLISTS : System.Web.UI.Page
             BindWomanGrid();
             //delete from woman list
             var womanListTA = new OralHealthTableAdapters.WomenRosterTableAdapter();
-            womanListTA.DeleteQuery(CensusID);
+            //womanListTA.DeleteQuery(CensusID);
             //PanelSuccess.Visible = true;
             //lblsucessmsg.Text = MsgWomanDeletedFromList;
             BindWomanGrid();

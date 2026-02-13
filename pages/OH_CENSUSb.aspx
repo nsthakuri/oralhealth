@@ -25,7 +25,7 @@
                 <div class="error-card-body">
                     <asp:Literal ID="LitErrors" runat="server" />
                 </div>
-            </asp:Panel>
+      </asp:Panel>
          
             <asp:Panel ID="PanelSuccess" runat="server" Visible="false">
             <div class="success-card">
@@ -47,9 +47,9 @@
                 Text="Add New Woman" 
                 OnClick="ButtonAddNewWoman_Click"
                 CausesValidation="false" />
-
-
-            <asp:Panel ID="PanelPopulateWomanList" runat="server">     
+  
+            
+      <asp:Panel ID="PanelPopulateWomanList" runat="server">     
                  
            <asp:GridView 
             ID="GridWomanList" 

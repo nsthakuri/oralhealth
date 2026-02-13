@@ -4,276 +4,206 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-// Data & Database
 using System.Data;
-using System.Data.SqlClient;
-using System.Configuration;
-
-// Typed DataSets
-using OralHealthTableAdapters;
-using maharishiTableAdapters;
-
 using System.Transactions;
+using OralHealthTableAdapters;
 
 public partial class pages_OH_WOMENROSTER : System.Web.UI.Page
 {
-    // Stores Household Address ID (Muni+Ward+HH)
-    // Passed from previous screen using QueryString
-    protected string strID;
-    protected string strWeek;
-    protected string strNepDate;
-    protected string strWorkerID;
-     
+    // QueryString Variables
+    protected string strID, strWeek, strNepDate, strWorkerID, strMsg;
+
     #region EVENTS
-    /***************************
-     *    EVENTS      *
-     ***************************/
+
     protected void Page_Load(object sender, EventArgs e)
     {
         strID = Request.QueryString["id"];
         strWeek = Request.QueryString["wk"];
         strNepDate = Request.QueryString["dt"];
-        strWorkerID = Request.QueryString["wr"];        
-         
+        strWorkerID = Request.QueryString["wr"];
+        strMsg = Request.QueryString["msg"];
+
         if (!IsPostBack)
         {
-            lblsucessmsg.Text = "";
-            string[] AryAddressUnit = Core.GetAddressUunit(strID);
+            if (string.IsNullOrEmpty(strID))
+            {
+                Response.Redirect("~/Default.aspx");
+                return;
+            }
+
+            PopulateWomen(strID);
+
+            if (strMsg == "successa")
+            {
+                PanelSuccess.Visible = true;
+                lblsucessmsg.Text = MsgHeaderSaved;
+            }
+            if (strMsg == "successmsg")
+            {
+                PanelSuccess.Visible = true;
+                lblsucessmsg.Text = MsgWomanSaved;
+            }
         }
     }
 
     protected void ButtonCreateNewWoman_Click(object sender, EventArgs e)
     {
-        lblsucessmsg.Text = "";
+        if (!Page.IsValid) return;
 
-        if (!Page.IsValid)
-            return;
+        // Uses a single, uniquely named class to avoid CS0121
+        List<WomanEntry> womenToSave = GetWomenFromInputs();
 
-        var women = GetWomenRows();
-
-        // At least one complete row
-        bool hasAtLeastOneWoman = women.Any(x =>
-            !string.IsNullOrWhiteSpace(x.First) &&
-            !string.IsNullOrWhiteSpace(x.Last));
-
-        if (!hasAtLeastOneWoman)
+        if (womenToSave.Count == 0)
         {
-            lblsucessmsg.Text =
-                "<span class='error-msg'>Please enter at least one woman (both first and last name).</span>";
+            lblsucessmsg.Text = "<span class='error-msg'>Please enter at least one woman (First and Last name).</span>";
             return;
         }
 
         try
         {
-            using (var scope = new TransactionScope())
+            using (TransactionScope scope = new TransactionScope())
             {
-                foreach (var w in women)
+                foreach (WomanEntry w in womenToSave)
                 {
-                    SaveWomenRosterRow(
-                        addressId: strID,
-                        week: strWeek,
-                        nepDate: strNepDate,
-                        workerId: strWorkerID,
-                        firstName: w.First,
-                        lastName: w.Last
-                    );
+                    // This calls your TableAdapter.Insert for each entry
+                    SaveSingleWoman(w.First, w.Last);
                 }
-
                 scope.Complete();
             }
 
-            // Redirect only if save succeeded
-            Response.Redirect(
-                "~/pages/OH_CENSUSb.aspx?id=" + strID +
-                "&wk=" + strWeek +
-                "&dt=" + strNepDate +
-                "&wr=" + strWorkerID +
-                "&page=censusb");
+            // 1. Refresh the grid
+            PopulateWomen(strID);
+
+            // 2. Clear the input text boxes
+            ClearInputFields();
+
+            // 3. Optional: Show a success message
+            lblsucessmsg.Text = "<span class='success-msg'>Women added successfully.</span>";
         }
         catch (Exception ex)
         {
-            // Better message for field team; log ex.Message internally if needed
-            lblsucessmsg.Text =
-                "<span class='error-msg'>Save failed. Please try again.</span>";
+            lblsucessmsg.Text = "<span class='error-msg'>Save failed. Error: " + ex.Message + "</span>";
         }
     }
 
-
+    // Helper method to clear the text boxes
+    private void ClearInputFields()
+    {
+        WOMFNAMES1.Text = ""; WOMLNAME1.Text = "";
+        WOMFNAMES2.Text = ""; WOMLNAME2.Text = "";
+        WOMFNAMES3.Text = ""; WOMLNAME3.Text = "";
+        WOMFNAMES4.Text = ""; WOMLNAME4.Text = "";
+    }
 
     #endregion
 
-    #region SUPPORTMETHODS
-    /***************************
-     *    SUPPORT METHODS      *
-     ***************************/
-    private class WomanRow
-    {
-        public string First;
-        public string Last;
+    #region SUPPORT METHODS
 
-        public WomanRow(string f, string l)
-        {
-            First = f;
-            Last = l;
-        }
+    private void PopulateWomen(string addr)
+    {
+        WomenRosterTableAdapter TA = new WomenRosterTableAdapter();
+        GridWomanList.DataSource = TA.GetDataByAddress(addr);
+        GridWomanList.DataBind();
     }
 
-    private List<WomanRow> GetWomenRows()
+    private void SaveSingleWoman(string fName, string lName)
     {
-        return new List<WomanRow>
-    {
-        new WomanRow(WOMFNAMES1.Text, WOMLNAME1.Text),
-        new WomanRow(WOMFNAMES2.Text, WOMLNAME2.Text),
-        new WomanRow(WOMFNAMES3.Text, WOMLNAME3.Text),
-        new WomanRow(WOMFNAMES4.Text, WOMLNAME4.Text)
-    };
-    }
-
-
-
-    private void SaveWomenRosterRow(
-    string addressId,
-    string week,
-    string nepDate,
-    string workerId,
-    string firstName,
-    string lastName)
-    {
-        firstName = (firstName ?? "").Trim();
-        lastName = (lastName ?? "").Trim();
-
-        // Skip empty row
-        if (firstName == "" && lastName == "")
-            return;
-
-        // Pair validation safety (UI already validates)
-        if (firstName == "" || lastName == "")
-            throw new ApplicationException("Invalid woman name pair.");
-
-        DateTime romDate = (DateTime)Core.GetRomDateFromNepDate(nepDate, true);
-
-        var adapter = new OralHealthTableAdapters.WomenRosterTableAdapter();
+        DateTime romDate = (DateTime)Core.GetRomDateFromNepDate(strNepDate, true);
+        WomenRosterTableAdapter adapter = new WomenRosterTableAdapter();
 
         adapter.Insert(
-            addressId,   // CensusAddress
-            week,        // CensusWeek
-            nepDate,     // CensusNepDate
-            romDate,     // CensusRomDate
-            workerId,    // CensusWorkerID
-
-            firstName.ToUpper().Trim(),
-            lastName.ToUpper().Trim(),
-            "2",         // Sex = Female
+            "",
+            strID,
+            strWeek,
+            strNepDate,
+            romDate,
+            strWorkerID,
+            fName.ToUpper().Trim(),
+            lName.ToUpper().Trim(),
+            "2", // Sex = Female
             "1",
-            null,
-            null,
-            null,
-
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-
-            "0",          // CensusStatus (incomplete)
+            null, null, null, "1", null, null, null, null, null, "1",
+            "0", // Status
+            "2", //new woman
             Core.GetDEO(),
             DateTime.Now,
             DateTime.Now
         );
     }
 
-
-    private void SaveWomenRoster(
-        string addressId,
-        string firstName,
-        string lastName,
-        string deo)
+    protected string GetDynamicUrl(object nnipsNum, object censusId)
     {
-        firstName = (firstName ?? "").Trim();
-        lastName = (lastName ?? "").Trim();
+        // 1. Handle the IDs (NNIPSNUM or CensusID)
+        string num = (nnipsNum == null || nnipsNum == DBNull.Value) ? "" : nnipsNum.ToString().Trim();
+        string id = (censusId == null || censusId == DBNull.Value) ? "" : Convert.ToString(censusId).Trim();
+        string strRosterID = Convert.ToString(censusId).Trim();
 
-        // Skip empty optional rows
-        if (firstName == "" && lastName == "")
-            return;
+        // Prioritize the 6-digit standardized number, else use the Integer CensusID
+        string targetId = (num.Length == 6) ? num : id;
 
-        // Safety: validation should already catch this
-        if (firstName == "" || lastName == "")
-            throw new ApplicationException("Invalid woman name pair.");
-        var WLAdapter = new OralHealthTableAdapters.WomenRosterTableAdapter();
-        // =======================
-        // INSERT INTO WOMENROSTER
-        // =======================  
-        WLAdapter.Insert(
-            strID,              // CensusAddress
-            strWeek,            // CensusWeek
-            strNepDate,         // CensusNepDate
-            (DateTime)Core.GetRomDateFromNepDate(strNepDate, true),
-            strWorkerID,
+        // 2. Build the URL with the additional variables from your QueryString
+        // strID, strWeek, strNepDate, and strWorkerID are already available in your class
+        return string.Format("~/pages/OH_CENSUS.aspx?id={0}&addr={1}&wk={2}&dt={3}&wr={4}&rid={5}",
+            targetId,
+            Server.UrlEncode(strID),
+            Server.UrlEncode(strWeek),
+            Server.UrlEncode(strNepDate),
+            Server.UrlEncode(strWorkerID),
+            Server.UrlEncode(strRosterID));
+    }
 
-            firstName,
-            lastName,
-            "2",
-            null,
-            null,
-            null,
-            null,
+    private List<WomanEntry> GetWomenFromInputs()
+    {
+        List<WomanEntry> list = new List<WomanEntry>();
+        if (IsFilled(WOMFNAMES1, WOMLNAME1)) list.Add(new WomanEntry(WOMFNAMES1.Text, WOMLNAME1.Text));
+        if (IsFilled(WOMFNAMES2, WOMLNAME2)) list.Add(new WomanEntry(WOMFNAMES2.Text, WOMLNAME2.Text));
+        if (IsFilled(WOMFNAMES3, WOMLNAME3)) list.Add(new WomanEntry(WOMFNAMES3.Text, WOMLNAME3.Text));
+        if (IsFilled(WOMFNAMES4, WOMLNAME4)) list.Add(new WomanEntry(WOMFNAMES4.Text, WOMLNAME4.Text));
+        return list;
+    }
 
-            null,
-            null,
-            null,
-            null,            
-            null,
-            null,
-            null,
-            "0",
-            Core.GetDEO(),
-            DateTime.Now,        // CensusCreateDate
-            DateTime.Now        // CensusCreateDate
-        );
+    private bool IsFilled(TextBox fn, TextBox ln)
+    {
+        return !string.IsNullOrWhiteSpace(fn.Text) && !string.IsNullOrWhiteSpace(ln.Text);
+    }
 
+    // Renamed helper class to prevent ambiguity
+    private class WomanEntry
+    {
+        public string First;
+        public string Last;
+        public WomanEntry(string f, string l)
+        {
+            First = f;
+            Last = l;
+        }
     }
 
     #endregion
 
     #region VALIDATIONS
-    /***************************
-     *    VALIDATIONS      *
-     ***************************/
-    protected void ValidateNamePair_Row1(object source, ServerValidateEventArgs args)
-    {
-        args.IsValid = IsValidPair(WOMFNAMES1.Text, WOMLNAME1.Text);
-    }
 
-    protected void ValidateNamePair_Row2(object source, ServerValidateEventArgs args)
-    {
-        args.IsValid = IsValidPair(WOMFNAMES2.Text, WOMLNAME2.Text);
-    }
-
-    protected void ValidateNamePair_Row3(object source, ServerValidateEventArgs args)
-    {
-        args.IsValid = IsValidPair(WOMFNAMES3.Text, WOMLNAME3.Text);
-    }
-
-    protected void ValidateNamePair_Row4(object source, ServerValidateEventArgs args)
-    {
-        args.IsValid = IsValidPair(WOMFNAMES4.Text, WOMLNAME4.Text);
-    }
+    protected void ValidateNamePair_Row1(object source, ServerValidateEventArgs args) { args.IsValid = IsValidPair(WOMFNAMES1.Text, WOMLNAME1.Text); }
+    protected void ValidateNamePair_Row2(object source, ServerValidateEventArgs args) { args.IsValid = IsValidPair(WOMFNAMES2.Text, WOMLNAME2.Text); }
+    protected void ValidateNamePair_Row3(object source, ServerValidateEventArgs args) { args.IsValid = IsValidPair(WOMFNAMES3.Text, WOMLNAME3.Text); }
+    protected void ValidateNamePair_Row4(object source, ServerValidateEventArgs args) { args.IsValid = IsValidPair(WOMFNAMES4.Text, WOMLNAME4.Text); }
 
     private bool IsValidPair(string fn, string ln)
     {
         fn = (fn ?? "").Trim();
         ln = (ln ?? "").Trim();
-
         if (fn == "" && ln == "") return true;
         if (fn != "" && ln != "") return true;
-
         return false;
     }
-     
 
     #endregion
+
+    // ---------- SUCCESS MESSAGES ----------
+    private const string MsgHeaderSaved =
+        "Success! Household header information has been saved.";
+
+    private const string MsgWomanSaved =
+        "Woman census information has been saved.";
 
 }

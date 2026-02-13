@@ -170,28 +170,32 @@ public class Core
         }
         return null;
     }
-     
+
     public static string FixNepDate(string strNepDate)
     {
+        if (string.IsNullOrWhiteSpace(strNepDate))
+            return null; // return null if input is null or empty
+
         if (strNepDate.Length == 8)
         {
-            if (strNepDate.Substring(4, 4) == "2099")
-            {
-                //whole date unknown
-                // no estimatation
-                return strNepDate;
-            }
-            if (strNepDate.Substring(0, 2) == "99")
-            {
+            string year = strNepDate.Substring(4, 4);
+            string day = strNepDate.Substring(0, 2);
+            string month = strNepDate.Substring(2, 2);
+
+            if (year == "2099")
+                return strNepDate; // whole date unknown
+
+            if (day == "99")
                 strNepDate = "15" + strNepDate.Substring(2, 6);
-            }
-            if (strNepDate.Substring(2, 2) == "99")
-            {
+
+            if (month == "99")
                 strNepDate = strNepDate.Substring(0, 2) + "06" + strNepDate.Substring(4);
-            }
         }
+
         return strNepDate;
     }
+
+
 
     public static string GetNepWeekAndDate()
     {
@@ -396,6 +400,56 @@ public class Core
         objConnection.Close();
     }
 
-    
+    public static void UpdateNNIPSVS(string nnipsNum, string vs)
+    {
+        if (string.IsNullOrWhiteSpace(nnipsNum)) return;
+
+        var adapter = new maharishiTableAdapters.NNIPSTableAdapter();
+        adapter.UpdateNNIPSVS(vs, DateTime.Now, nnipsNum);
+    }
+
+
+    // ==============================
+    // 1. Update existing NNIPS profile safely
+    // ==============================
+    public static void UpdateNNIPSProfile(string vs, string address, string dobNep, string nnipsNum)
+    {
+        if (string.IsNullOrWhiteSpace(nnipsNum)) return;
+
+        var adapter = new maharishiTableAdapters.NNIPSTableAdapter();
+
+        // Treat "99999999" as null
+        string dobNepClean = string.IsNullOrWhiteSpace(dobNep) || dobNep.Trim() == "99999999"
+            ? null
+            : Core.CleanText(dobNep);
+
+        DateTime? dobRom = null;
+        if (!string.IsNullOrWhiteSpace(dobNepClean))
+            dobRom = Core.GetRomDateFromNepDate(dobNepClean, true);
+
+        adapter.UpdateProfile(
+            vs,
+            address,
+            dobNepClean,
+            dobRom,
+            DateTime.Now,
+            nnipsNum
+        );
+    }
+    // ==============================
+    // Check if a NNIPS exists in Census table using NNIPSTableAdapter
+    // ==============================
+    public static bool CheckCensusNNIPSExists(string nnipsNum)
+    {
+        if (string.IsNullOrWhiteSpace(nnipsNum))
+            return false;
+
+        var adapter = new maharishiTableAdapters.NNIPSTableAdapter();
+
+        // Assuming your TableAdapter has a method like GetCensusByNNIPS
+        var dt = adapter.GetDataByNNIPSnum(nnipsNum);
+
+        return dt != null && dt.Rows.Count > 0;
+    } 
 
 }

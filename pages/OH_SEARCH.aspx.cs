@@ -42,44 +42,34 @@ public partial class pages_OH_SEARCH : Page
     {
         View_WomanProfileTableAdapter TA = new View_WomanProfileTableAdapter();
         OralHealth.View_WomanProfileDataTable DT = new OralHealth.View_WomanProfileDataTable();
+
         if (searchType == "nnipsnum")
-        {
             TA.FillByNNIPSnum(DT, strID);
-        }
         else
-        {
             TA.FillByAddress(DT, strID);
-        } 
 
         if (DT.Rows.Count > 0)
         {
-            OralHealth.View_WomanProfileRow CARow = (OralHealth.View_WomanProfileRow)DT.Rows[0];
+            LitErrors.Text = ""; // clear message
+
+            OralHealth.View_WomanProfileRow CARow =
+                (OralHealth.View_WomanProfileRow)DT.Rows[0];
+
             LblNNIPSNum.Text = CARow.CensusNNIPSnum;
-            LblName.Text = CARow.CensusFirstNames + ' ' + CARow.CensusLastName;
+            LblName.Text = CARow.CensusFirstNames + " " + CARow.CensusLastName;
             LblHusbNNIPSNum.Text = CARow.CensusHusbNNIPSnum;
-            LblHusbName.Text = CARow.CensusHusbFirstNames + ' ' + CARow.CensusHusbLastName;
+            LblHusbName.Text = CARow.CensusHusbFirstNames + " " + CARow.CensusHusbLastName;
             LblDOB.Text = CARow.CensusDOBNep;
-            LblAgeAtEnroll.Text = CARow.CalculatedAge.ToString()  +" Years";
-            //LblEnrollDate.Text = CARow.CalculatedAge.ToString();
-            //if (CARow.CensusDOBType == "1")
-            //{
-            //    LblDOBType.Text = "DOB Verified";
-            //}
-            //else if (CARow.CensusDOBType == "2")
-            //{
-            //    LblDOBType.Text = "Reported";
-            //}
-            //else {
-            //    LblDOBType.Text = "Nothing";
-            //}
-                    
+            LblAgeAtEnroll.Text = CARow.CalculatedAge + " Years";
             LblAddress.Text = CARow.CensusAddress;
-            //LblMapUnit.Text = CARow.CAMapUnit;
-            //LblHHAllocation.Text = 
-            //LblWVName.Text =  
-
         }
-
+        else
+        {
+            // No record found
+            PanelError.Visible = true;
+            LitErrors.Text = "No record found.";
+            PanelData.Visible = false;             
+        }
     }
 
 

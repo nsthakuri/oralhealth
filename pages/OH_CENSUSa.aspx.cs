@@ -125,7 +125,7 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
 
         bool isDataSaved = SaveHeaderData(strID, lat, lng);
         if (!isDataSaved) return;
-
+         
         // ---------------------------
         // SUCCESS HEADER
         // ---------------------------
@@ -177,23 +177,102 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         // ---------------------------
         // ELIGIBLE WOMAN EXISTS
         // ---------------------------
+        //if (hhStatus == "1" && hasWoman == "1")
+        //{
+        //    View_WomanProfileTableAdapter caAdapter = new View_WomanProfileTableAdapter();
+        //    bool hasData = caAdapter.GetDataByAddressMSNull(strID).Rows.Count > 0;
+
+        //    if (hasData)
+        //    {
+        //        // Existing women → show census repeater
+        //        PanelCensusPeople.Visible = true;
+        //    }
+        //    else
+        //    {
+        //        // No women yet → show add new woman UI
+        //        PanelCensusPeople.Visible = false;
+        //        PanelNewWomanConfirm.Visible = true;
+        //    }
+        //} 
+        // --------------------------------------------------
+        // DATA TRANSFER: Census -> WomenRoster
+        // --------------------------------------------------
+        // We transfer if HHStatus is continue (1) and there is an eligible woman (1)
         if (hhStatus == "1" && hasWoman == "1")
         {
-            View_WomanProfileTableAdapter caAdapter = new View_WomanProfileTableAdapter();
-            bool hasData = caAdapter.GetDataByAddressMSNull(strID).Rows.Count > 0;
+            try
+            {
+                // 1. Fetch all eligible women from the Census View for this Address
+                var censusAdapter = new OralHealthTableAdapters.View_WomanProfileTableAdapter();
+                var censusDataTable = censusAdapter.GetDataByAddressMSNull(Address);
+                if (censusDataTable.Rows.Count > 0)
+                {
+                    var rosterAdapter = new OralHealthTableAdapters.WomenRosterTableAdapter();
 
-            if (hasData)
+                    // 2. Use a Transaction to ensure all-or-nothing saving
+                    using (TransactionScope scope = new TransactionScope())
+                    {
+                        // LOOP through every row found in the census data
+                        foreach (DataRow row in censusDataTable.Rows)
+                        {
+                            var censusRow = (OralHealth.View_WomanProfileRow)row;
+
+                            // Check if this woman already exists in WomenRoster
+                            var exists = rosterAdapter.GetDataByNNIPSnum(censusRow.CensusNNIPSnum).Rows.Count > 0;
+                            if (exists)
+                            {
+                                // If exists, do nothing and skip to next
+                                continue;
+                            }
+
+                            // Otherwise, insert new woman
+                            string fName = Core.CleanText(censusRow.CensusFirstNames);
+                            string lName = Core.CleanText(censusRow.CensusLastName);
+
+                            DateTime romDate = (DateTime)Core.GetRomDateFromNepDate(FormDateNep, true);
+
+                            rosterAdapter.Insert(
+                                censusRow.CensusNNIPSnum,
+                                Address,
+                                Week.Text,
+                                FormDateNep,
+                                romDate,
+                                WorkerId.Text,
+                                fName,
+                                lName,
+                                "2",         // Sex = Female
+                                null,
+                                censusRow.CensusAge,
+                                censusRow.CensusDOBNep,
+                                censusRow.CensusDOBRom,
+                                null,
+                                null,
+                                null,
+                                censusRow.CensusHusbNNIPSnum,
+                                Core.CleanText(censusRow.CensusHusbFirstNames),
+                                Core.CleanText(censusRow.CensusHusbLastName),
+                                null,
+                                "0",
+                                "1",         // existing woman
+                                Core.GetDEO(),
+                                DateTime.Now,
+                                DateTime.Now
+                            );
+                        }
+
+                        // Complete the transaction
+                        scope.Complete();
+                    }
+                }
+            } 
+            catch (Exception ex)
             {
-                // Existing women → show census repeater
-                PanelCensusPeople.Visible = true;
+                LitErrors.Text = "Data transfer failed: " + ex.Message;
+                PanelError.Visible = true;
+                return;
             }
-            else
-            {
-                // No women yet → show add new woman UI
-                PanelCensusPeople.Visible = false;
-                PanelNewWomanConfirm.Visible = true;
-            }
-        } 
+        }
+
         // insert log data
         Core.InsertDataEntryLogWorkerID(WorkerId.Text);
         PanelError.Visible = false;
@@ -201,6 +280,7 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         PanelSuccess.Visible = true;
         ButtonSaveData.Visible = true;
         lblsucessmsg.Text = MsgCollectInfo;
+        Response.Redirect("~/pages/OH_WOMENROSTER.aspx?id=" + Address + "&wk=" + Week.Text + "&dt=" + FormDateNep + "&wr=" + WorkerId.Text + "&page=roster&msg=successa");
     }
 
     protected void ButtonSaveData_Click(object sender, EventArgs e)
@@ -378,6 +458,7 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         {
             CARow.CAHOHFNames = HOHFNames.Text.Trim().ToUpper();
             CARow.CAHOHLName = HOHLName.Text.Trim().ToUpper();
+            CARow.CAHOHMS = CAHOHMS.SelectedValue;
             CARow.CAResFNames = ResFNames.Text.Trim().ToUpper();
             CARow.CAResLName = ResLName.Text.Trim().ToUpper();
             CARow.CAHHCons = HHCons.SelectedValue;
@@ -529,7 +610,7 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
                     if (!string.IsNullOrWhiteSpace(womNN))
                     {
                         NNIPSAdapter.UpdateProfile(
-                            vs, Core.CleanText(WomDOBNep.Text),                        
+                            vs, Address, Core.CleanText(WomDOBNep.Text),                        
                             (DateTime)Core.GetRomDateFromNepDate(WomDOBNep.Text, true),
                             DateTime.Now,
                             womNN);
@@ -581,13 +662,13 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         string hhStatus = HHStatus.SelectedValue;
         string hasWoman = HasElgWoman.SelectedValue;
         string hhCons = HHCons.SelectedValue;
+        string cahohms = CAHOHMS.SelectedValue;
 
-        // =========================
-        // HHStatus = 1 (continue) → GPS REQUIRED
-        // =========================
+        // 1. GPS Validation
         if (hhStatus == "1")
-        {
-            decimal vLat, vLng;
+        {   
+            decimal vLat;
+            decimal vLng;
             string gpsError;
 
             if (!TryValidateNepalGPS(hfLat.Value, hfLong.Value, out vLat, out vLng, out gpsError))
@@ -605,65 +686,49 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         }
         else
         {
-            // STOP / non-continue → GPS + eligible-woman must be empty
-            if (!string.IsNullOrWhiteSpace(hfLat.Value) ||
-                !string.IsNullOrWhiteSpace(hfLong.Value) ||
-                !string.IsNullOrWhiteSpace(hasWoman))
-            {
-                _headerErrors.Add(
-                    "GPS and eligible woman fields must be empty for non-eligible households.");
-            }
+            if (!string.IsNullOrWhiteSpace(hfLat.Value) || !string.IsNullOrWhiteSpace(hfLong.Value) || !string.IsNullOrWhiteSpace(hasWoman))
+                _headerErrors.Add("GPS and eligible woman fields must be empty for non-eligible households.");
         }
 
-        // =========================
-        // Has Eligible Woman = YES
-        // =========================
+        // 2. Has Eligible Woman = YES
         if (hasWoman == "1")
         {
-            if (string.IsNullOrWhiteSpace(HOHFNames.Text))
-                _headerErrors.Add("Head of household first name is required.");
+            if (string.IsNullOrWhiteSpace(HOHFNames.Text)) _headerErrors.Add("Head of household first name is required.");
+            if (string.IsNullOrWhiteSpace(HOHLName.Text)) _headerErrors.Add("Head of household last name is required.");
+            if (string.IsNullOrWhiteSpace(hhCons)) _headerErrors.Add("Household consent is required.");
 
-            if (string.IsNullOrWhiteSpace(HOHLName.Text))
-                _headerErrors.Add("Head of household last name is required.");
+            // Your requested logic: CAHOHMS = 2 is Required, 1 is Empty
+            if (cahohms == "2")
+            {
+                if (string.IsNullOrWhiteSpace(ResFNames.Text)) _headerErrors.Add("Respondent first name is required.");
+                if (string.IsNullOrWhiteSpace(ResLName.Text)) _headerErrors.Add("Respondent last name is required.");
+            }
+            else if (cahohms == "1")
+            {
+                if (!string.IsNullOrWhiteSpace(ResFNames.Text) || !string.IsNullOrWhiteSpace(ResLName.Text))
+                    _headerErrors.Add("Respondent names must be empty when met status is 'Met'.");
+            }
 
-            if (string.IsNullOrWhiteSpace(ResFNames.Text))
-                _headerErrors.Add("Respondent first name is required.");
-
-            if (string.IsNullOrWhiteSpace(ResLName.Text))
-                _headerErrors.Add("Respondent last name is required.");
-
-            if (string.IsNullOrWhiteSpace(hhCons))
-                _headerErrors.Add("Household consent is required.");
-
-            // Consent = YES → PerCount required
             if (hhCons == "1" && string.IsNullOrWhiteSpace(PerCount.Text))
                 _headerErrors.Add("Family count is required when consent is Yes.");
 
-            // Consent = REFUSED → PerCount must be empty
             if (hhCons == "6" && !string.IsNullOrWhiteSpace(PerCount.Text))
                 _headerErrors.Add("Family count must be empty when consent is Refused.");
         }
-
-        // =========================
-        // Has Eligible Woman = NO
-        // =========================
-        if (hasWoman == "0")
+        // 3. Has Eligible Woman = NO
+        else if (hasWoman == "0")
         {
-            if (!string.IsNullOrWhiteSpace(HOHFNames.Text) ||
-                !string.IsNullOrWhiteSpace(HOHLName.Text) ||
-                !string.IsNullOrWhiteSpace(ResFNames.Text) ||
-                !string.IsNullOrWhiteSpace(ResLName.Text) ||
-                !string.IsNullOrWhiteSpace(hhCons) ||
-                !string.IsNullOrWhiteSpace(PerCount.Text))
-            {
-                _headerErrors.Add(
-                    "Head of household, respondent name, consent, and family count must be empty when no eligible woman exists.");
-            }
+            bool hasData = !string.IsNullOrWhiteSpace(HOHFNames.Text) || !string.IsNullOrWhiteSpace(HOHLName.Text) ||
+                           !string.IsNullOrWhiteSpace(ResFNames.Text) || !string.IsNullOrWhiteSpace(ResLName.Text) ||
+                           !string.IsNullOrWhiteSpace(hhCons) || !string.IsNullOrWhiteSpace(PerCount.Text)
+                           || !string.IsNullOrWhiteSpace(cahohms);
+
+            if (hasData)
+                _headerErrors.Add("Fields (Names, Met status, Consent, Family Count) must be empty when no eligible woman exists.");
         }
 
         return _headerErrors.Count == 0;
     }
-
 
     private void Required(TextBox t, string womID, string msg, List<string> errorList, ref bool valid)
     {
