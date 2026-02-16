@@ -7,7 +7,17 @@
 <%@ MasterType VirtualPath="~/Site.master" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">   
-     
+     <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+  <script type="text/javascript">
+      function RefreshWomNNIPSNum() {
+          __doPostBack('<%= CensusNNIPSNumStatus.ClientID %>', '');
+      };
+      function RefreshHusbNNIPSNum() {
+          __doPostBack('<%= CensusNNIPSNumStatus.ClientID %>', '');
+      };
+
+  </script>
+
     <asp:CustomValidator
                 ID="cvCensus"
                 runat="server"
@@ -44,18 +54,21 @@
             </h4>
              
             <!-- =================== WOMAN SECTION =================== -->
-                     <table class="table" style="width: 100%; border-collapse: collapse;">
+
+                     
                          <asp:Panel ID="PanelWomanNNIPSNUM" runat="server">     
+                     <table class="table" style="width: 100%; border-collapse: collapse;">
                          <tr>
                     <td><asp:Label ID="Label1" Text="Assign NNIPSNUM" runat="server" CssClass="question-label" /> :</td>
                     <td><asp:DropDownList ID="CensusNNIPSNumStatus" runat="server"
-                            AutoPostBack="true"
+                            AutoPostBack="true" onchange="RefreshWomNNIPSNum();"
                             OnSelectedIndexChanged="CensusNNIPSNumStatus_SelectedIndexChanged">
                         <asp:ListItem Value="">---</asp:ListItem>
                         <asp:ListItem Value="1">Auto assign</asp:ListItem>
                         <asp:ListItem Value="2">Manual assign</asp:ListItem>
                         <asp:ListItem Value="3">Correction</asp:ListItem>
                     </asp:DropDownList>
+
                         <asp:RequiredFieldValidator 
                                 ID="RequiredFieldValidator1" 
                                 runat="server" 
@@ -63,13 +76,23 @@
                                 InitialValue=""
                                 ErrorMessage="Select NNIPSNum status" 
                                 CssClass="error-msg" 
-                                Display="Dynamic" /> <br />
-                        <asp:Label ID="LblNote" runat="server" CssClass="card-title" />
+                                Display="Dynamic" />                         
                     </td>
                 </tr>
+                          
+
+                     </table>
                     </asp:Panel>
 
-                        <!-- NNIPS Number -->
+                    <asp:UpdatePanel ID="Update1" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelWomNNIPSNum" runat="server">
+                  <table class="table">
+                      <tr>
+                          <td colspan="2">
+                              <asp:Label ID="LblNote" runat="server" CssClass="card-title" />
+                          </td>
+                      </tr>
                         <tr>
                             <td>
                                 <asp:Label ID="Label2" Text="NNIPSNUM" runat="server" CssClass="question-label" /> :
@@ -81,9 +104,18 @@
                                     CssClass="question-label" />
                             </td>
                         </tr>
+                          </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="CensusNNIPSNumStatus" />
+                    </Triggers>
+                  </asp:UpdatePanel>
+                        
+                         <!-- First Names -->
 
-                        <!-- First Names -->
-                        <tr> 
+                  <table class="table">
+                      <tr> 
                             <td class="label-cell">
                                 <asp:Label ID="Label10" Text="First Names" runat="server" CssClass="question-label" /> :
                             </td>
@@ -194,20 +226,40 @@
                                 Note: Married without husband = Divorced, separated, widowed
                             </td>
                         </tr>
+                      </table>
 
-                         <asp:Panel ID="PanelHusbandNNIPSNUM" runat="server">     
+                      <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelHusbandNNIPSNUM" runat="server">     
+                  <table class="table">
+                         
                          <tr>
                             <td class="label-cell">
                                 <asp:Label ID="Label3" Text="Assign NNIPSNUM" runat="server" CssClass="question-label" />
                             </td>
                             <td>
-                                <asp:DropDownList ID="CensusHusbNNIPSNumStatus" runat="server">                                    
+                                <asp:DropDownList ID="CensusHusbNNIPSNumStatus" runat="server"
+                                    AutoPostBack="true" onchange="RefreshHusbNNIPSNum();"
+                                    OnSelectedIndexChanged="CensusHusbNNIPSNumStatus_SelectedIndexChanged">
                                     <asp:ListItem Value="1">Auto assign</asp:ListItem>
                                     <asp:ListItem Value="2">Manual assign</asp:ListItem>                                    
                                 </asp:DropDownList>
                             </td>
                         </tr>
-                         </asp:Panel>
+                             </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="CensusNNIPSNumStatus" />
+                    </Triggers>
+                  </asp:UpdatePanel>
+
+                <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelHusbNNIPSNum" runat="server">     
+                  <table class="table">
+              
+               <table class="table">
 
                         <tr>
                             <td class="label-cell">
@@ -221,7 +273,18 @@
                             </td>
                         </tr>
 
-                        <tr>
+                              </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="CensusNNIPSNumStatus" />
+                        <asp:AsyncPostBackTrigger ControlID="CensusHusbNNIPSNumStatus" />
+                    </Triggers>
+                  </asp:UpdatePanel>
+
+               
+                <table class="table">
+                    <tr>
                             <td class="label-cell">
                                 <asp:Label ID="Label21" Text="Husband First Names" runat="server" CssClass="question-label" />
                             </td>
@@ -460,6 +523,6 @@
 
            
          
-    </script>
+  </script>
            
 </asp:Content>

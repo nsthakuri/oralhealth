@@ -92,6 +92,43 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         }
     }
 
+    protected void HasElgWoman_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string elgWoman = HasElgWoman.SelectedValue; 
+        if(elgWoman == "1")
+        {
+            PanelHOH.Visible = true;
+        }
+        else
+        {
+            PanelHOH.Visible = false;            
+        }
+    }
+    protected void CAHOHMS_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string HOHMS = CAHOHMS.SelectedValue;
+        if (HOHMS == "2")
+        {
+            PanelRespondent.Visible = true;
+        }
+        else
+        {
+            PanelRespondent.Visible = false;
+        }
+    }
+    protected void HHCons_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string HHConsent = HHCons.SelectedValue;
+        if (HHConsent == "1")
+        {
+            PanelHHConsent.Visible = true;
+        }
+        else
+        {
+            PanelHHConsent.Visible = false;
+        }
+    }
+
     protected void ButtonSaveHeaderData_Click(object sender, EventArgs e)
     {
         lblsucessmsg.Text = "";
@@ -408,7 +445,7 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
         {
             var tb = PanelHeader.FindControl(name) as TextBox;
             if (tb != null)
-                tb.Enabled = false;
+                tb.ReadOnly = true;
         }
     }
 
@@ -684,11 +721,11 @@ public partial class pages_OH_CENSUSa : System.Web.UI.Page
             if (string.IsNullOrWhiteSpace(hasWoman))
                 _headerErrors.Add("Eligible woman selection is required.");
         }
-        else
-        {
-            if (!string.IsNullOrWhiteSpace(hfLat.Value) || !string.IsNullOrWhiteSpace(hfLong.Value) || !string.IsNullOrWhiteSpace(hasWoman))
-                _headerErrors.Add("GPS and eligible woman fields must be empty for non-eligible households.");
-        }
+        //else
+        //{
+        //    if (!string.IsNullOrWhiteSpace(hfLat.Value) || !string.IsNullOrWhiteSpace(hfLong.Value) || !string.IsNullOrWhiteSpace(hasWoman))
+        //        _headerErrors.Add("GPS and eligible woman fields must be empty for non-eligible households.");
+        //}
 
         // 2. Has Eligible Woman = YES
         if (hasWoman == "1")

@@ -10,12 +10,18 @@ using OralHealthTableAdapters;
 using maharishiTableAdapters;
 public partial class pages_OH_CREATEHH : System.Web.UI.Page
 {
+    String[] hdrObjectNames = new String[] {"Week", "Day","Month",
+        "Year","WorkerId"};
     protected void Page_Load(object sender, EventArgs e)
     {
+        DisableHeaderTextBoxes();
+
         if (!IsPostBack)
         {
             MuniId.Focus();
-            string[] AryWeekDate = Core.GetWeekDate(DateTime.Today);             
+
+            string[] AryWeekDate = Core.GetWeekDate(DateTime.Today);
+
             if (AryWeekDate.Length > 1 && AryWeekDate[1].Length >= 8)
             {
                 Week.Text = AryWeekDate[0];
@@ -23,10 +29,13 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
                 Month.Text = AryWeekDate[1].Substring(2, 2);
                 Year.Text = AryWeekDate[1].Substring(6, 2);
             }
+
             WorkerId.Text = Core.GetDEO();
 
+            LoadMapUnits();
         }
     }
+
 
     protected void ButtonCreateHH_Click(object sender, EventArgs e)
     {
@@ -34,44 +43,39 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         {
             if (!Page.IsValid) return;
 
-            if (!CheckMapUnit())
-            {
-                PanelError.Visible = true;
-                LitErrors.Text = "Map Unit mismatch.";
-                return;
-            }
-
-            // =========================
-            // GPS
-            // =========================             
             decimal temp;
             decimal? lat = decimal.TryParse(hfLat.Value, out temp) ? temp : (decimal?)null;
-            decimal? lng = decimal.TryParse(hfLong.Value, out temp) ? temp : (decimal?)null; 
+            decimal? lng = decimal.TryParse(hfLong.Value, out temp) ? temp : (decimal?)null;
 
-            // =========================
-            // CREATE HH
-            // =========================
-            bool ok = CreateNewHH(lat, lng);
+            // The method now returns true if the household was successfully created
+            if (!CreateNewHH(lat, lng))
+                return;
 
-            if (!ok) return;
-
-            // =========================
-            // PANEL LOGIC
-            // =========================
+            // 1. UI State Management
             PanelHeader.Visible = false;
             PanelError.Visible = false;
             PanelSuccess.Visible = true;
 
-            // Show confirmation ONLY when needed
-            if (HasElgWoman.SelectedValue == "1" &&
-                HHCons.SelectedValue == "1")
+            // 2. Generate Context-Specific Success Message
+            string addressMsg = "Household <b>" + LitAddress.Text + "</b> has been created.";
+
+            if (HasElgWoman.SelectedValue == "0")
             {
-                PanelNewWomanConfirm.Visible = true;
+                lblsucessmsg.Text = addressMsg + "<br />No eligible woman recorded. Data collection for this HH is stopped.";
+                PanelNewWomanConfirm.Visible = false;
+            }
+            else if (HHCons.SelectedValue == "6")
+            {
+                lblsucessmsg.Text = addressMsg + "<br />Consent was refused. Data collection stopped.";
+                PanelNewWomanConfirm.Visible = false;
             }
             else
             {
-                PanelNewWomanConfirm.Visible = false;
+                lblsucessmsg.Text = addressMsg + "<br />Please confirm if you would like to add woman details now.";
+                PanelNewWomanConfirm.Visible = true;
             }
+
+            // 3. Log the activity
             Core.InsertDataEntryLogWorkerID(WorkerId.Text);
         }
         catch (Exception ex)
@@ -79,10 +83,53 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
             PanelError.Visible = true;
             PanelSuccess.Visible = false;
             PanelNewWomanConfirm.Visible = false;
-            LitErrors.Text = "System error occurred. Please retry with valid inputs.";
+            LitErrors.Text = "An error occurred during saving: " + ex.Message;
         }
     }
 
+    protected void Ward_TextChanged(object sender, EventArgs e)
+    {    
+        LoadMapUnits(); 
+
+    }
+
+    protected void HasElgWoman_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string elgWoman = HasElgWoman.SelectedValue;
+        if (elgWoman == "1")
+        {
+            PanelHOH.Visible = true;
+        }
+        else
+        {
+            PanelHOH.Visible = false;
+            PanelRespondent.Visible = false;
+        }
+    }
+    protected void CAHOHMS_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string HOHMS = CAHOHMS.SelectedValue;
+        if (HOHMS == "2")
+        {
+            PanelRespondent.Visible = true;
+        }
+        else
+        {
+            PanelRespondent.Visible = false;
+        }
+    }
+    protected void HHCons_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string HHConsent = HHCons.SelectedValue;
+        if (HHConsent == "1")
+        {
+            PanelHHConsent.Visible = true;
+        }
+        else
+        {
+            PanelHHConsent.Visible = false;
+        }
+    }
 
     protected void ButtonYes_Click(object sender, EventArgs e)
     {
@@ -92,13 +139,8 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
             return;
         }
         PanelNewWomanConfirm.Visible = false;
-        PanelSuccess.Visible = true;                
-        Response.Redirect(string.Format(
-            "~/pages/OH_CENSUSb.aspx?id={0}&wk={1}&dt={2}&wr={3}&page=censusb",
-            LitAddress.Text,
-            Week.Text,
-            FormDateNep,
-            WorkerId.Text));
+        PanelSuccess.Visible = true;                        
+        Response.Redirect("~/pages/OH_WOMENROSTER.aspx?id=" + LitAddress.Text + "&wk=" + Week.Text + "&dt=" + FormDateNep + "&wr=" + WorkerId.Text + "&page=roster");
 
     }
     protected void ButtonNo_Click(object sender, EventArgs e)
@@ -110,54 +152,62 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         PanelSuccess.Visible = true;
         PanelNewWomanConfirm.Visible = false;
     }
-     
+
     private bool CreateNewHH(decimal? lat, decimal? lng)
     {
-        var CAAdapter = new OralHealthTableAdapters.CensusAddressTableAdapter();
-        var NNAddrAdapter = new maharishiTableAdapters.NNIPSAddressTableAdapter();
+        // ============================
+        // Validate Map Unit
+        // ============================
+        if (string.IsNullOrEmpty(ddlMapUnit.SelectedValue))
+        {
+            PanelError.Visible = true;
+            LitErrors.Text = "Please select Map Unit.";
+            return false;
+        }
+
+        var CAAdapter = new CensusAddressTableAdapter();
+        var NNAdapter = new maharishiTableAdapters.NNIPSAddressTableAdapter();
 
         // ============================
-        // 1) Generate HHID
+        // Generate next free HH
         // ============================
-        object obj = NNAddrAdapter.GetMaxHH(
-            MuniId.Text,
-            Ward.Text,
-            strMapUnit
-        );
-
+        string fullAddress = "";
         int nextHH = 1;
 
-        if (obj != null && obj != DBNull.Value)
-            nextHH = Convert.ToInt32(obj) + 1;
+        while (true)
+        {
+            string hhStr = nextHH.ToString("D4");
 
-        string hhStr = nextHH.ToString("D4");
+            fullAddress =
+                MuniId.Text +
+                Ward.Text +
+                hhStr;
 
-        string fullAddress =
-            MuniId.Text +
-            Ward.Text +
-            hhStr;
+            if (NNAdapter.GetDataByAddress(fullAddress).Rows.Count == 0)
+                break;
+
+            nextHH++;
+        }
 
         // ============================
-        // 2) Duplicate Check
-        // ============================
-        if (NNAddrAdapter.GetDataByAddress(fullAddress).Rows.Count > 0)
-            throw new Exception("Duplicate household detected.");
-
-        // ============================
-        // 3) NNIPSAddress Row
+        // NNIPS Address Row
         // ============================
         var NNDT = new maharishi.NNIPSAddressDataTable();
         var NNRow = NNDT.NewNNIPSAddressRow();
 
         NNRow.ADDRESS = fullAddress;
 
-        if (lat.HasValue) NNRow.LAT = lat.Value;
-        else NNRow.SetLATNull();
+        if (lat.HasValue)
+            NNRow.LAT = lat.Value;
+        else
+            NNRow.SetLATNull();
 
-        if (lng.HasValue) NNRow.LONG = lng.Value;
-        else NNRow.SetLONGNull();
+        if (lng.HasValue)
+            NNRow.LONG = lng.Value;
+        else
+            NNRow.SetLONGNull();
 
-        NNRow.MAPUNIT = strMapUnit;
+        NNRow.MAPUNIT = ddlMapUnit.SelectedValue;
         NNRow.COMMENT = "Added via OralHealth";
         NNRow.NACREATE = DateTime.Now;
         NNRow.NAUPDATE = DateTime.Now;
@@ -165,48 +215,60 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         NNDT.AddNNIPSAddressRow(NNRow);
 
         // ============================
-        // 4) CensusAddress Row
+        // Census Address Row
         // ============================
         var CADT = new OralHealth.CensusAddressDataTable();
         var CARow = CADT.NewCensusAddressRow();
 
         CARow.CAAddress = fullAddress;
-        CARow.CAHHStatus = "2"; //new HH
+        CARow.CAHHStatus = "2";        
         CARow.CAHasWoman = HasElgWoman.SelectedValue;
-        CARow.CAMapUnit = strMapUnit;
-        CARow.CAPreprinted = "0";  
+        CARow.CAMapUnit = ddlMapUnit.SelectedValue;
+        CARow.CAPreprinted = "0";
+
         if (HasElgWoman.SelectedValue == "1")
         {
             if (!string.IsNullOrWhiteSpace(HOHFNames.Text))
                 CARow.CAHOHFNames = HOHFNames.Text.Trim().ToUpper();
-            else CARow.SetCAHOHFNamesNull();
+            else
+                CARow.SetCAHOHFNamesNull();
 
             if (!string.IsNullOrWhiteSpace(HOHLName.Text))
                 CARow.CAHOHLName = HOHLName.Text.Trim().ToUpper();
-            else CARow.SetCAHOHLNameNull();
+            else
+                CARow.SetCAHOHLNameNull();
+
+            if (!string.IsNullOrWhiteSpace(CAHOHMS.SelectedValue))
+                CARow.CAHOHMS = CAHOHMS.SelectedValue;
+            else
+                CARow.SetCAHOHMSNull();
 
             if (!string.IsNullOrWhiteSpace(ResFNames.Text))
                 CARow.CAResFNames = ResFNames.Text.Trim().ToUpper();
-            else CARow.SetCAResFNamesNull();
+            else
+                CARow.SetCAResFNamesNull();
 
             if (!string.IsNullOrWhiteSpace(ResLName.Text))
                 CARow.CAResLName = ResLName.Text.Trim().ToUpper();
-            else CARow.SetCAResLNameNull();
+            else
+                CARow.SetCAResLNameNull();
 
             if (!string.IsNullOrWhiteSpace(HHCons.SelectedValue))
                 CARow.CAHHCons = HHCons.SelectedValue;
-            else CARow.SetCAHHConsNull();
+            else
+                CARow.SetCAHHConsNull();
 
             if (HHCons.SelectedValue == "1" &&
                 !string.IsNullOrWhiteSpace(PerCount.Text))
                 CARow.CAPerCount = PerCount.Text;
-            else CARow.SetCAPerCountNull();
+            else
+                CARow.SetCAPerCountNull();
         }
         else
         {
-            // No eligible woman → clear fields
             CARow.SetCAHOHFNamesNull();
             CARow.SetCAHOHLNameNull();
+            CARow.SetCAHOHMSNull();
             CARow.SetCAResFNamesNull();
             CARow.SetCAResLNameNull();
             CARow.SetCAHHConsNull();
@@ -216,31 +278,76 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         CADT.AddCensusAddressRow(CARow);
 
         // ============================
-        // 5) Save in Transaction
+        // Save Transaction
         // ============================
         using (var scope = new System.Transactions.TransactionScope())
         {
-            NNAddrAdapter.Update(NNDT);
+            NNAdapter.Update(NNDT);
             CAAdapter.Update(CADT);
             scope.Complete();
         }
 
         LitAddress.Text = fullAddress;
-
         return true;
     }
 
-    protected bool CheckMapUnit()
+
+    private void DisableHeaderTextBoxes()
     {
+        foreach (string name in hdrObjectNames)
+        {
+            var tb = PanelHeader.FindControl(name) as TextBox;
+            if (tb != null)
+                tb.ReadOnly = true;
+        }
+    }
+
+
+    private void LoadMapUnits()
+    {
+        LblMapError.Text = "";
         var adapter = new maharishiTableAdapters.NNIPSAddressTableAdapter();
         var dt = new maharishi.NNIPSAddressDataTable();
 
-        if (adapter.FillByMuniIdWard(dt, MuniId.Text + Ward.Text) == 0)
-            return false;
+        ddlMapUnit.Items.Clear();
+        ddlMapUnit.Items.Add(new ListItem("--Select--", ""));
 
-        string dbMapUnit = dt[0]["MapUnit"].ToString().Trim();
-        return dbMapUnit.Equals(strMapUnit.Trim(),
-               StringComparison.OrdinalIgnoreCase);
+        // Reset error panel at the start of the check
+        //PanelError.Visible = false;
+        //LitErrors.Text = "";
+
+        string muniWardId = MuniId.Text + Ward.Text;
+
+        // Fill the DataTable and check if records exist
+        int recordCount = adapter.FillByMuniIdWard(dt, muniWardId);
+
+        if (recordCount == 0)
+        {
+            //[cite_start]// Show message using the existing error panel controls 
+            //PanelError.Visible = true;
+            //PanelError.CssClass = "error-card show";
+            LblMapError.Text = "<br /> No map units found for the selected Muni and Ward.";
+            return;
+        }
+
+        var units = dt
+            .Where(r => !r.IsMAPUNITNull())
+            .Select(r => r.MAPUNIT.Trim())
+            .Distinct()
+            .OrderBy(x => x);
+
+        // If there are records but they all have NULL MapUnits, show a message
+        if (!units.Any())
+        {
+            //PanelError.Visible = true;
+            LblMapError.Text = "Records exist, but no valid Map Units were found.";
+            return;
+        }
+
+        foreach (var u in units)
+        {
+            ddlMapUnit.Items.Add(u);
+        }
     }
 
 
@@ -255,8 +362,7 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         // =========================
         if (  
             string.IsNullOrWhiteSpace(MuniId.Text) ||
-            string.IsNullOrWhiteSpace(Ward.Text) ||
-            string.IsNullOrWhiteSpace(MapUnit.Text) ||
+            string.IsNullOrWhiteSpace(Ward.Text) || 
             string.IsNullOrWhiteSpace(HasElgWoman.SelectedValue))
         {
             cvHHLogic.ErrorMessage = "Missing required fields.";
@@ -272,11 +378,11 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
             // CLEAR FIELDS
             HOHFNames.Text = "";
             HOHLName.Text = "";
+            CAHOHMS.SelectedValue = ""; 
             ResFNames.Text = "";
             ResLName.Text = "";
             HHCons.SelectedValue = "";
-            PerCount.Text = "";
-
+            PerCount.Text = "";            
             return; // valid, stop further checks
         }
 
@@ -285,11 +391,10 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
         // =========================
         if (string.IsNullOrWhiteSpace(HOHFNames.Text) ||
             string.IsNullOrWhiteSpace(HOHLName.Text) ||
-            string.IsNullOrWhiteSpace(ResFNames.Text) ||
-            string.IsNullOrWhiteSpace(ResLName.Text))
+            string.IsNullOrWhiteSpace(CAHOHMS.SelectedValue))
         {
             cvHHLogic.ErrorMessage =
-                "Names required when eligible woman exists.";
+                "Names and met status required when eligible woman exists.";
             args.IsValid = false;
             return;
         }
@@ -320,7 +425,7 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
             return;
         }
     }
-     
+
 
     protected string FormDateNep
     {
@@ -329,17 +434,10 @@ public partial class pages_OH_CREATEHH : System.Web.UI.Page
             return Core.BuildNepaliDate(
                 Day.Text,
                 Month.Text,
-                Year.Text
-            );
+                Year.Text);
         }
     }
 
-    protected string strMapUnit
-    {
-        get
-        {
-            return ("M" + MapUnit.Text); 
-        }
-    }
+
 
 }

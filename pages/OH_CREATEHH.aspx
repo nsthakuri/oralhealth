@@ -2,6 +2,20 @@
 <%@ MasterType VirtualPath="../site.master" %>  
  
 <asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+      <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+  <script type="text/javascript">      
+      function RefreshElgWomanUpdate() {
+          __doPostBack('<%= HasElgWoman.ClientID %>', '');
+      };
+      function RefreshHOHMSUpdate() {
+          __doPostBack('<%= CAHOHMS.ClientID %>', '');
+      };
+      function RefreshHHConsentUpdate() {
+          __doPostBack('<%= HHCons.ClientID %>', '');
+      };
+
+  </script>
+     
     <asp:Literal ID="LitCurWeek" runat="server" Visible="false" />
     <div class="page-card">         
         <asp:Literal ID="LitAddress" runat="server" Visible="false" />
@@ -28,13 +42,7 @@
                 </div>  
             </div>
             </asp:Panel>
-
-        <asp:ValidationSummary 
-    runat="server"
-    CssClass="error-msg"
-    HeaderText="Please fix:"
-    ShowMessageBox="true"
-    ShowSummary="false" />
+         
 
          <asp:Panel ID="PanelNewWomanConfirm" runat="server" Visible="false">      
           <div class="question-card">
@@ -121,7 +129,7 @@
                 <tr> 
                     
                 <td>
-                    <asp:Label ID="LblMonth" Text="Mon" runat="server" CssClass="question-label" />
+                    <asp:Label ID="LblMonth" Text="Month" runat="server" CssClass="question-label" />
                 </td>
                 <td>
                     <asp:TextBox AutoComplete="off" runat="server" ID="Month" MaxLength="2" Width="60" />
@@ -192,8 +200,7 @@
                         CssClass="error-msg"
                         Display="Dynamic" />
                 </td>
-            </tr>
-          
+            </tr>          
          
                 <tr> 
                         <td>
@@ -211,44 +218,53 @@
                         </td>
                      
                         <td>
-                            <asp:TextBox runat="server" ID="LAT" Width="210" ReadOnly="true" />                             
+                            <asp:TextBox runat="server" ID="LAT" Width="210" />
+                            <asp:HiddenField ID="hfLat" runat="server" />                            
+                            <asp:RequiredFieldValidator
+                                runat="server"
+                                ControlToValidate="LAT"
+                                ErrorMessage="Latitude required"
+                                ValidationGroup="vgHeader"
+                                ForeColor="Red" />
                             <asp:RegularExpressionValidator 
                                 ID="RegExLat" 
                                 runat="server"  
                                 ControlToValidate="LAT"
                                 ValidationExpression="^([2][6-9]|30)\.[0-9]{1,6}$"
-                                ErrorMessage="Enter valid latitude (26.000000 - 30.999999)." 
+                                ErrorMessage="Enter valid latitude (26.000000 - 30.999999)."
                                 CssClass="error-msg"
-                                Display="Dynamic" />
-
-                            <asp:HiddenField ID="hfLat" runat="server" />                            
+                                Display="Dynamic" /> 
                              
                         </td>
                     </tr>
 
-                    <tr>
+                <tr>
                         <td> 
                             <asp:Label ID="Label3" Text="Longitude" runat="server" CssClass="question-label" />
                         </td>
                      
                         <td>
-                            <asp:TextBox runat="server" ID="LONG" Width="210"  ReadOnly="true" />
-                            
+                            <asp:TextBox runat="server" ID="LONG" Width="210" />
+                            <asp:HiddenField ID="hfLong" runat="server" />
+                            <asp:RequiredFieldValidator
+                                runat="server"
+                                ControlToValidate="LONG"
+                                ErrorMessage="Longitude required"
+                                ValidationGroup="vgHeader"
+                                ForeColor="Red" />
                             <asp:RegularExpressionValidator 
                                 ID="RegExLong" 
                                 runat="server"
                                 ControlToValidate="LONG"
                                 ValidationExpression="^(8[0-8])\.[0-9]{1,6}$"
-                                ErrorMessage="Enter valid longitude (80.000000 - 88.999999)." 
+                                ErrorMessage="Enter valid longitude (80.000000 - 88.999999)."
                                 CssClass="error-msg"
-                                Display="Dynamic" />   
-                                
-                              <asp:HiddenField ID="hfLong" runat="server" />
+                                Display="Dynamic" />
                              
                         </td>
                     </tr>
 
-        <tr>
+                <tr>
                 <td>
                     <asp:Label ID="LblNGP" Text="Muni ID" runat="server" CssClass="question-label" />
                 </td>
@@ -270,16 +286,17 @@
                         CssClass="error-msg"
                         Display="Dynamic" />
                 </td>
-         </tr> 
-                
+         </tr>                 
 
-            <tr>
+                <tr>
                 <td>
                     <asp:Label ID="LblWard" Text="Ward" runat="server" CssClass="question-label" />
 
                 </td>
                 <td>
-                    <asp:TextBox AutoComplete="off" runat="server" ID="Ward" MaxLength="2" Width="60" />
+                    <asp:TextBox AutoComplete="off" runat="server" ID="Ward" MaxLength="2" 
+                        Width="60"   onkeyup="RefreshUpdatePanel();" 
+                        AutoPostBack="true" OnTextChanged="Ward_TextChanged" />
                     <asp:RequiredFieldValidator 
                         ID="ReqWard" 
                         runat="server" 
@@ -299,28 +316,24 @@
                 </td>
             </tr>
                  
-           <tr>
+                <tr>
                 <td>
                     <asp:Label ID="Label1" Text="Map Unit" runat="server" CssClass="question-label" />
 
                 </td>            
                 <td>
-                    M <asp:TextBox AutoComplete="off" runat="server" ID="MapUnit" MaxLength="3" Width="90" />
-                    <asp:RequiredFieldValidator
-                            runat="server"
-                            ControlToValidate="MapUnit"
-                            ErrorMessage="Map unit is required."
-                            CssClass="error-msg"
-                            Display="Dynamic"
-                            EnableClientScript="false" />
-                    <asp:RegularExpressionValidator 
-                        ID="RegularExpressionValidator1" 
-                        runat="server" 
-                        ControlToValidate="MapUnit"
-                        ValidationExpression="^\d{3}$"
-                        ErrorMessage="Map unit must be 3 digits."
-                        CssClass="error-msg"
-                        Display="Dynamic" />
+                    
+
+                    <asp:UpdatePanel ID="Update1" runat="server">
+                    <ContentTemplate>                          
+                        <asp:DropDownList ID="ddlMapUnit" runat="server" />
+                        <asp:Label ID="LblMapError" runat="server" CssClass="error-msg" />
+                        </ContentTemplate>
+                        <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="Ward" />
+                    </Triggers>
+                    </asp:UpdatePanel>
+                         
                 </td>
             </tr>
 
@@ -342,6 +355,14 @@
 
                     </td>
                 </tr>
+             
+                </table>
+
+
+                <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelHeaderData" runat="server">
+                  <table class="table">
 
                 <tr>
                         <td> 
@@ -349,7 +370,10 @@
                         </td>
                     
                         <td>
-                            <asp:DropDownList ID="HasElgWoman" runat="server" onchange="onHasElgChange();">
+                            <asp:DropDownList ID="HasElgWoman" runat="server" 
+                                AutoPostBack="true"
+                                onchange="RefreshElgWomanUpdate();"                                
+                                OnSelectedIndexChanged="HasElgWoman_SelectedIndexChanged">
                                 <asp:ListItem Enabled="true" Value="">-----</asp:ListItem>
                                 <asp:ListItem Text="No" Value="0" />
                                 <asp:ListItem Text="Yes" Value="1" />
@@ -363,28 +387,41 @@
                                 Display="Dynamic" />
                         </td>
                     </tr>
+                          </table>
+                        </asp:Panel> 
+                         </ContentTemplate>                     
+                  </asp:UpdatePanel>
 
-                <tr>
+                <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelHOH" runat="server" Visible="false">                                              
+                    <table class="table">
+                    <tr>
                         <td>
                             <asp:Label ID="Label4" Text="First Names of head of household" runat="server" CssClass="question-label" />
                         </td>
-                     
+                    </tr>
+                    <tr>
                         <td>
-                            <asp:TextBox AutoComplete="off" runat="server" ID="HOHFNames" Width="210" />                           
+                            <asp:TextBox AutoComplete="off" runat="server" ID="HOHFNames" Width="210" />
+                          
+
                         </td>
                     </tr>
 
                     <tr>
                         <td>
                             <asp:Label ID="Label5" Text="Last Name of head of household" runat="server" CssClass="question-label" />
-                        </td>                    
+                        </td>
+                    </tr>
+                    <tr>
                         <td>
                             <asp:TextBox AutoComplete="off" runat="server" ID="HOHLName" Width="210" />
                            
                         </td>
                     </tr>
 
-                     <tr>
+                    <tr>
                         <td>
                             <asp:Label ID="Label15" Text="Met Status" runat="server" CssClass="question-label" />
                         </td>
@@ -392,26 +429,59 @@
                         
                        <tr>
                         <td>
-                            <asp:DropDownList ID="CAHOHMS" runat="server">
+                            <asp:DropDownList ID="CAHOHMS" runat="server"
+                                AutoPostBack="true"
+                                onchange="RefreshHOHMSUpdate();"                                
+                                OnSelectedIndexChanged="CAHOHMS_SelectedIndexChanged">
                                 <asp:ListItem Enabled="true" Value="">-----</asp:ListItem>
                                 <asp:ListItem Text="Met" Value="1" />
                                 <asp:ListItem Text="Not met" Value="2" />
-                            </asp:DropDownList> 
-                            <asp:RequiredFieldValidator 
-                                ID="RequiredFieldValidator3" 
-                                runat="server" 
-                                ControlToValidate="CAHOHMS"
-                                ErrorMessage="Required field"
-                                CssClass="error-msg" 
-                                Display="Dynamic" />
+                            </asp:DropDownList>  
                         </td>
                     </tr>
 
-                    <!-- RESPONDENT -->
+                        <!-- HH CONSENT -->
+                    <tr>
+                        <td>
+                            <asp:Label ID="Label8" Text="Household consent" runat="server" CssClass="question-label" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <asp:DropDownList ID="HHCons" runat="server" CssClass="dd-input"
+                                AutoPostBack="true"
+                                onchange="RefreshHHConsentUpdate();"                                
+                                OnSelectedIndexChanged="HHCons_SelectedIndexChanged">
+                                <asp:ListItem Value="">-----</asp:ListItem>
+                                <asp:ListItem Value="1">Yes</asp:ListItem>
+                                <asp:ListItem Value="6">Refused</asp:ListItem>
+                            </asp:DropDownList>
+                      
+                        </td>
+                    </tr> 
+
+                    
+                      
+                        </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="HasElgWoman" />
+                    </Triggers>
+                  </asp:UpdatePanel>
+
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelRespondent" runat="server" Visible="false">                                              
+                    <table class="table">                
+                <table>
+                      <!-- RESPONDENT -->
                     <tr>
                         <td>
                             <asp:Label ID="Label7" Text="First Names of Respondent" runat="server" CssClass="question-label" />
                         </td>
+                    </tr>
+                    <tr>
                         <td>
                             <asp:TextBox AutoComplete="off" runat="server" ID="ResFNames" Width="210" ValidationGroup="vgHeader" />
                             
@@ -422,6 +492,8 @@
                         <td>
                             <asp:Label ID="Label6" Text="Last Name of Respondent" runat="server" CssClass="question-label" />
                         </td>
+                    </tr>
+                    <tr>
                         <td>
                             <asp:TextBox AutoComplete="off" runat="server" ID="ResLName" Width="210" ValidationGroup="vgHeader" />
                            
@@ -429,48 +501,84 @@
                         </td>
                     </tr>
                      
-                    <!-- HH CONSENT -->
-                    <tr>
-                        <td>
-                            <asp:Label ID="Label8" Text="Household consent" runat="server" CssClass="question-label" />
-                        </td>
-                        <td>
-                            <asp:DropDownList ID="HHCons" runat="server" CssClass="dd-input">
-                                <asp:ListItem Value="">-----</asp:ListItem>
-                                <asp:ListItem Value="1">Yes</asp:ListItem>
-                                <asp:ListItem Value="6">Refused</asp:ListItem>
-                            </asp:DropDownList>
-                      
-                        </td>
-                    </tr> 
+                   </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="CAHOHMS" />
+                    </Triggers>
+                  </asp:UpdatePanel>
 
-                    <!-- FAMILY COUNT -->
+                 
+            
+                <asp:UpdatePanel ID="UpdatePanel4" runat="server">
+                    <ContentTemplate>  
+                    <asp:Panel ID="PanelHHConsent" runat="server" Visible="false">                                              
+                    <table class="table">                
+                <table>
+                <!-- FAMILY COUNT -->
                     <tr>
                         <td>
                             <asp:Label ID="Label9" Text="Total family count" runat="server" CssClass="question-label" />
                         </td>
+                    </tr>
+                    <tr>
                         <td>
-                            <asp:TextBox AutoComplete="off" runat="server" ID="PerCount" Width="210" MaxLength="2" ValidationGroup="vgHeader"/>
-                            <asp:RegularExpressionValidator 
-                            ID="RegularExpressionValidator2" 
-                            runat="server" 
-                            ControlToValidate="PerCount"
-                            ValidationExpression="^\d{2}$"
-                            ErrorMessage="Numerical value only"
-                            CssClass="error-msg"
-                            Display="Dynamic" />
+                            <asp:TextBox AutoComplete="off" runat="server" ID="PerCount" Width="210" MaxLength="2" ValidationGroup="vgHeader" />
+                             
+                    <asp:RangeValidator 
+                        ID="RangeValidatorPerCount" 
+                        runat="server" 
+                        ControlToValidate="PerCount" 
+                        MinimumValue="01" 
+                        MaximumValue="25" 
+                        Type="String"
+                        ErrorMessage="Enter a value between 01 and 25." 
+                        ValidationGroup="vgHeader" 
+                        Display="Dynamic" 
+                        CssClass="error-msg" />
+
+                    <asp:RegularExpressionValidator 
+                        ID="RegularExpressionValidator1" 
+                        runat="server" 
+                        ControlToValidate="PerCount" 
+                        ValidationExpression="^(0[1-9]|1[0-9]|2[0-5])$" 
+                        ErrorMessage="Must be numerical value."
+                        ValidationGroup="vgHeader"
+                        CssClass="error-msg" 
+                        Display="Dynamic" />
                              
                         </td>
                     </tr>
-                     
+                    
+                 </table>
+                        </asp:Panel> 
+                         </ContentTemplate>
+                    <Triggers>
+                        <asp:AsyncPostBackTrigger ControlID="HHCons" />
+                    </Triggers>
+                  </asp:UpdatePanel>
+                 
+
+                <table class="table">
                     <tr>
-                        <td colspan="2">
-                            <asp:Button ID="ButtonCreateHH" runat="server" CssClass="btn btn-primary"                             
-                             OnClick="ButtonCreateHH_Click" Text="Create New HH" CausesValidation="true" />
-                        </td>
-                    </tr>
-                </table>
-            </asp:Panel> 
+                    <td>
+                        <asp:Button 
+                        ID="ButtonCreateHH" 
+                        runat="server" 
+                        CssClass="btn btn-primary"
+                        Text="Submit" 
+                        OnClick="ButtonCreateHH_Click"
+                        CausesValidation="true"
+                        ValidationGroup="vgHeader"
+                        OnClientClick="syncGpsToHidden(); return true;" />
+
+                    </td>
+                </tr>
+                </table> 
+                      
+            
+           </asp:Panel>
      
      </div> 
 
@@ -512,28 +620,7 @@ function syncGpsToHidden() {
                 hfLat.value = latBox.value;
                 hfLong.value = lonBox.value;
             }
-        }
-
-         
-        function validatePair(fnId, lnId, args) {
-            var fn = document.getElementById(fnId).value.trim();
-            var ln = document.getElementById(lnId).value.trim();
-
-            // both empty = OK
-            if (fn === "" && ln === "") {
-                args.IsValid = true;
-                return;
-            }
-
-            // both filled = OK
-            if (fn !== "" && ln !== "") {
-                args.IsValid = true;
-                return;
-            }
-
-            // only one filled = INVALID
-            args.IsValid = false;
-        }
+        } 
 
     </script>
 

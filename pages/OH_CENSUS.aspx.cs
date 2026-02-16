@@ -69,9 +69,10 @@ public partial class pages_OH_CENSUS : System.Web.UI.Page
         string ns = CensusNNIPSNumStatus.SelectedValue;
         if(ns == "3")
         {
-            CensusHusbNNIPSNumStatus.Visible = false;
-            HusbandNNIPSNUM.Visible = false;
-            WomanNNIPSNUM.Enabled = false;
+            //3=correction
+            PanelWomNNIPSNum.Visible = false;
+            PanelHusbandNNIPSNUM.Visible = false;
+            PanelHusbNNIPSNum.Visible = false; 
             LblNote.Text = "Correction: Use this option if the woman’s maternal home is within " +
                 "the NNIPS area and she has already been enrolled in one of our previous studies " +
                 "and received an NNIPS number. In this case, please complete all required forms " + 
@@ -80,23 +81,38 @@ public partial class pages_OH_CENSUS : System.Web.UI.Page
         }
         else if (ns == "1")
         {
-            WomanNNIPSNUM.Enabled = false;
-            CensusHusbNNIPSNumStatus.Visible = true;
-            HusbandNNIPSNUM.Visible = true;
+            //1=auto assign
+            PanelWomNNIPSNum.Visible = false; 
             LblNote.Text = "Auto Assign: When this option is selected, a new NNIPS number is  " +
                 "automatically created and saved in the census database. You do not need to  " + 
                 "enter an NNIPS number manually.";
         }
         else
         {
-            WomanNNIPSNUM.Enabled = true;
-            CensusHusbNNIPSNumStatus.Visible = true;
-            HusbandNNIPSNUM.Visible = true;
+            //2=manual assign
+            PanelWomNNIPSNum.Visible = true;
+            //WomanNNIPSNUM.Enabled = true;
+            //CensusHusbNNIPSNumStatus.Visible = true;
+            //HusbandNNIPSNUM.Visible = true;
             LblNote.Text = "Manual Assign: Use this option only if the NNIPS number is already known." + 
                 "You will need to enter the NNIPS number manually.";
         }
     }
 
+    protected void CensusHusbNNIPSNumStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        HusbandNNIPSNUM.Text = "";
+        string ns = CensusHusbNNIPSNumStatus.SelectedValue;
+        if(ns == "1")
+        {
+            PanelHusbNNIPSNum.Visible = false;
+        }
+        else
+        {
+            PanelHusbNNIPSNum.Visible = true;
+        }
+
+    }
     protected void ButtonSaveData_Click(object sender, EventArgs e)
     {
         Page.Validate("vgCensus");
